@@ -45,19 +45,16 @@ def my_algorithm(arr):
                 arr[j], arr[j + 1] = arr[j + 1], arr[j]
     return arr
 """,
-    "O(n³) – Matrix Multiply": """\
+   "O(n³) – Triple Loop": """\
 def my_algorithm(arr):
-    # O(n^3) - Naive Matrix Multiplication (sqrt(n) x sqrt(n) matrices)
-    import math
-    size = max(2, int(math.sqrt(len(arr))))
-    A = [[arr[i % len(arr)] for j in range(size)] for i in range(size)]
-    B = [[arr[(i+j) % len(arr)] for j in range(size)] for i in range(size)]
-    C = [[0]*size for _ in range(size)]
-    for i in range(size):
-        for j in range(size):
-            for k in range(size):
-                C[i][j] += A[i][k] * B[k][j]
-    return C
+    # O(n^3) - True Cubic Time
+    n = len(arr)
+    acc = 0
+    for i in range(n):
+        for j in range(n):
+            for k in range(n):
+                acc += 1
+    return acc
 """,
     "O(2ⁿ) – Fibonacci Recursive": """\
 def my_algorithm(arr):
