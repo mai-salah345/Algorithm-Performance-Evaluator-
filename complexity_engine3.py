@@ -51,6 +51,9 @@ def _desc(n): return gen._generate_reverse_sorted(n)
 
 # ── O(1) flat-line detector ───────────────────────────────────────────────────
 def _is_flat(times):
+    # حماية: لا يمكن حساب الانحراف المعياري لنقطة واحدة
+    if len(times) < 2:
+        return False
     m = statistics.mean(times)
     return m < 1e-7 or (statistics.stdev(times) / m < 0.20)
 
@@ -90,9 +93,21 @@ def _fit_ratio(sizes, times):
 
 # ── Decision engine ───────────────────────────────────────────────────────────
 def _decide(sizes, times):
+    # حماية إضافية: لو المصفوفة واحدة بس، رجع نتيجة مبدئية بدون كراش
+    if len(sizes) < 2:
+        default_rankings = [(lbl, 0.0) for lbl, _ in COMPLEXITY_CLASSES]
+        return {
+            "best_fit": "Test Run (1 Point)", 
+            "confidence_pct": 0.0, 
+            "ambiguous": True,
+            "r2_rankings": default_rankings, 
+            "ratio_rankings": default_rankings
+        }
+
     if _is_flat(times):
         return {"best_fit": "O(1)", "confidence_pct": 99.0, "ambiguous": False,
                 "r2_rankings": [("O(1)", 1.0)], "ratio_rankings": [("O(1)", 0.0)]}
+    
     r2, rt = _fit_r2(sizes, times), _fit_ratio(sizes, times)
     l1, s1 = r2[0]; l2, _ = r2[1] if len(r2) > 1 else (l1, s1)
     rb = rt[0][0]
@@ -148,8 +163,8 @@ if __name__ == "__main__":
         ("O(n)       Linear Search",  SAMPLE_ALGORITHMS["O(n) – Linear Search"],  AUTO_SIZES_DEFAULT),
         ("O(n log n) Merge Sort",     SAMPLE_ALGORITHMS["O(n log n) – Merge Sort"], AUTO_SIZES_DEFAULT),
         ("O(n^2)     Bubble Sort",    SAMPLE_ALGORITHMS["O(n²) – Bubble Sort"],    [10,50,200,500,800]),
-        ("O(n^3)     Triple Loop",    SAMPLE_ALGORITHMS["O(n³) – Matrix Multiply"],    AUTO_SIZES_CUBIC),
-        ("O(2^n)     Fibonacci Rec", SAMPLE_ALGORITHMS["O(2ⁿ) – Fibonacci Recursive"], AUTO_SIZES_EXP),
+        ("O(n^3)     Triple Loop",    SAMPLE_ALGORITHMS["O(n³) – Triple Loop"],    AUTO_SIZES_CUBIC),
+        ("O(2^n)     Fibonacci Rec", SAMPLE_ALGORITHMS["O(2ⁿ) – Recursive Fib"], AUTO_SIZES_EXP),
     ]
 
     print("\n" + "═"*62 + "\n  RUNNING OPTIMIZED COMPLEXITY DEMOS\n" + "═"*62)
