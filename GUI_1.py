@@ -24,6 +24,7 @@ COMPLEXITY_MODELS = {
     "O(2ⁿ)":        lambda n: 2.0 ** np.minimum(n, 30),
     "O(2^n)":       lambda n: 2.0 ** np.minimum(n, 30),
 }
+# دي علشان لما اجي ارسم الرسمة الصح مع الرسمة اللي طلعتلي
 
 DESC = {
     "O(1)": "Constant", "O(log n)": "Logarithmic", "O(n)": "Linear",
@@ -32,6 +33,7 @@ DESC = {
     "O(n^3)": "Cubic", "O(n³)": "Cubic",
     "O(2^n)": "Exponential", "O(2ⁿ)": "Exponential",
 }
+# دي علشان احسن شكل النتايج في ال gui
 
 FUNCTION_TEMPLATE = """\
 # do NOT rename the function 'my_algorithm'
@@ -42,13 +44,14 @@ def my_algorithm(arr):
 
     return arr
 """
+#دي الحتة اللي بتتكتب في الeditor علشان تظهر لليوزر
 
 def lbl(parent, text, fg=FG, bg=PANEL, **kw):
     return tk.Label(parent, text=text, fg=fg, bg=bg, **kw)
 
 def sep(parent, row):
     tk.Frame(parent, bg=BORDER, height=1).grid(row=row, column=0, sticky="ew", padx=16)
-
+#الدالتين دول لتظبيط الشكل مش الlogic
 
 # ── Main App ──────────────────────────────────────────────────────────────────
 class AlgorithmEvaluatorApp(tk.Tk):
@@ -63,6 +66,7 @@ class AlgorithmEvaluatorApp(tk.Tk):
         self._build_header()
         self._build_body()
         self._build_status_bar()
+        #دي تجهيز للشكل وكدة يعني مش للوجيك برضو
 
     # ── Header ────────────────────────────────────────────────────────────────
     def _build_header(self):
@@ -104,6 +108,7 @@ class AlgorithmEvaluatorApp(tk.Tk):
                 btn.configure(bg=BLUE, fg=BG, font=("Segoe UI", 10, "bold"))
             else:
                 btn.configure(bg=BORDER, fg=FG, font=("Segoe UI", 10))
+    #هنا ده تظبيط لشكل وشغل ال header يعني مش للوجيك برضو
 
     # ── Body ──────────────────────────────────────────────────────────────────
     def _build_body(self):
@@ -136,6 +141,22 @@ class AlgorithmEvaluatorApp(tk.Tk):
                                                   selectbackground="#264f78")
         self._editor.insert("1.0", FUNCTION_TEMPLATE)
         self._editor.grid(row=0, column=0, sticky="nsew")
+#----------------------------------------------جديد --------------------------------------------------------
+        self._editor.bind("<Control-c>", lambda e: self._editor.event_generate("<<Copy>>"))
+        self._editor.bind("<Control-v>", lambda e: self._editor.event_generate("<<Paste>>"))
+        self._editor.bind("<Control-x>", lambda e: self._editor.event_generate("<<Cut>>"))
+        self._editor.bind("<Control-a>", lambda e: self._select_all(e))
+        
+
+        self._context_menu = tk.Menu(self._editor, tearoff=0, bg=PANEL, fg=FG, selectcolor=BLUE)
+        self._context_menu.add_command(label="Copy", command=lambda: self._editor.event_generate("<<Copy>>"))
+        self._context_menu.add_command(label="Paste", command=lambda: self._editor.event_generate("<<Paste>>"))
+        self._context_menu.add_command(label="Cut", command=lambda: self._editor.event_generate("<<Cut>>"))
+        self._context_menu.add_separator()
+        self._context_menu.add_command(label="Select All", command=lambda: self._select_all())
+
+        self._editor.bind("<Button-3>", lambda e: self._context_menu.post(e.x_root, e.y_root))
+#----------------------------------------------جديد --------------------------------------------------------
 
         # Manual row
         self._manual_row = tk.Frame(left, bg=PANEL, padx=8, pady=6)
@@ -150,7 +171,7 @@ class AlgorithmEvaluatorApp(tk.Tk):
         self._auto_row = tk.Frame(left, bg=PANEL, padx=8, pady=6)
         lbl(self._auto_row, "Algorithm:", bg=PANEL).pack(side="left")
         self._algo_var = tk.StringVar()
-        algo_names = list(SAMPLE_ALGORITHMS.keys())
+        algo_names = list(SAMPLE_ALGORITHMS.keys()) # هنا بياخد اسماء الخواريزميات المتخزنين علشان يعرضها في ال combo box
         self._algo_combo = ttk.Combobox(self._auto_row, textvariable=self._algo_var,
                                          values=algo_names, state="readonly", width=38)
         self._algo_combo.set(algo_names[0])
@@ -159,11 +180,17 @@ class AlgorithmEvaluatorApp(tk.Tk):
         s = ttk.Style(); s.theme_use("default")
         s.configure("TCombobox", fieldbackground=BG, background=BORDER,
                     foreground=FG, selectbackground="#264f78", arrowcolor=BLUE)
+ #----------------------------------------------جديد --------------------------------------------------------
+    def _select_all(self, event=None):
+        self._editor.tag_add("sel", "1.0", "end")
+        return "break" 
+ #----------------------------------------------جديد --------------------------------------------------------
 
     def _load_algo_to_editor(self):
         code = SAMPLE_ALGORITHMS.get(self._algo_var.get(), "")
         self._editor.delete("1.0", "end")
         self._editor.insert("1.0", code)
+        #هنا دي اللي لما بختار حاجة معينة من ال combo box بتاخد الكود بتاعها اللي انا مخزناه وتعرضه في ال editor
 
     def _build_right_panel(self, parent):
         right = tk.Frame(parent, bg=BG)
@@ -183,7 +210,7 @@ class AlgorithmEvaluatorApp(tk.Tk):
         lbl(det, "DETECTED COMPLEXITY", fg=DIM, bg=PANEL, font=("Segoe UI", 8, "bold")).pack(anchor="w")
         self._complexity_label = lbl(det, "—", fg=GREEN, bg=PANEL, font=("Segoe UI", 32, "bold"))
         self._complexity_label.pack(anchor="w")
-        self._complexity_desc = lbl(det, "Run an analysis to see results", fg=DIM, bg=PANEL)
+        self._complexity_desc = lbl(det, "Run an analysis to see results", fg=DIM, bg=PANEL) #ده بيتغير لما اطلع الناتج
         self._complexity_desc.pack(anchor="w")
 
         # Confidence bar
@@ -234,52 +261,6 @@ class AlgorithmEvaluatorApp(tk.Tk):
         tk.Label(bar, textvariable=self._status_var, fg=DIM, bg=BORDER,
                  anchor="w", padx=10).pack(fill="x")
 
-    # ── Run ───────────────────────────────────────────────────────────────────
-    def _on_run(self):
-        if self._running: return
-        self._running = True
-        self._run_btn.configure(state="disabled", text="⏳  Running…")
-        self._status("Running analysis…")
-        threading.Thread(target=self._run_analysis, daemon=True).start()
-
-    def _run_analysis(self):
-        try:
-            code = self._editor.get("1.0", "end-1c")
-            mode = self._mode.get()
-            if mode == "Manual":
-                sizes, times, res = self._run_manual(code)
-            else:
-                sizes, times, res = self._run_auto(code)
-            best  = res["best_fit"]
-            conf  = res["confidence_pct"]
-            scores = {lbl: 1.0 - sc for lbl, sc in res["r2_rankings"]}
-            self.after(0, lambda: self._update_results(sizes, times, best, scores, mode, conf))
-        except Exception as e:
-            msg = str(e)
-            self.after(0, lambda: self._show_error(msg))
-        finally:
-            self._running = False
-            self.after(0, lambda: self._run_btn.configure(state="normal", text="▶  Run Analysis"))
-
-    def _run_manual(self, code):
-        raw = self._array_entry.get().strip()
-        try:
-            arr = [float(x.strip()) for x in raw.split(",") if x.strip()]
-        except ValueError:
-            raise RuntimeError("Array input must be comma-separated numbers.")
-        if not arr:
-            raise RuntimeError("Please enter at least one number.")
-        res = analyze_manual(code, [arr])
-        return res["sizes"], res["times"], res
-
-    def _run_auto(self, code):
-        res   = analyze_auto(code, repeats=5, include_cases=True)
-        sizes = res["sizes"]
-        self._best_times_map     = dict(zip(sizes, res["best_case"]["times"]))
-        self._worst_times_map    = dict(zip(sizes, res["worst_case"]["times"]))
-        self._best_engine_result = res["best_case"]
-        self._worst_engine_result= res["worst_case"]
-        return sizes, res["times"], res
 
     # ── Update UI ─────────────────────────────────────────────────────────────
     def _update_results(self, sizes, times, best, scores, mode, conf=None):
@@ -333,9 +314,25 @@ class AlgorithmEvaluatorApp(tk.Tk):
             self._best_lbl.configure( text=self._best_engine_result["best_fit"],  fg=GREEN)
             self._avg_lbl.configure(  text=best,                                   fg=BLUE)
             self._worst_lbl.configure(text=self._worst_engine_result["best_fit"],  fg=RED)
+
         else:
             for l in [self._best_lbl, self._avg_lbl, self._worst_lbl]:
                 l.configure(text=best, fg=GREEN)
+
+        if mode == "Manual" and hasattr(self, "_manual_marker"):
+            _, _, mlabel, mcolor = self._manual_marker
+            self._best_lbl.configure( text="—",  fg=GREEN)
+            self._avg_lbl.configure(  text="—",  fg=BLUE)
+            self._worst_lbl.configure(text="—",  fg=RED)
+
+            # هايلت اللي المستخدم أقرب ليه بس
+            if mlabel == "Best Case":
+                self._best_lbl.configure(text=best, fg=GREEN)
+            elif mlabel == "Worst Case":
+                self._worst_lbl.configure(text=best, fg=RED)
+            else:
+                self._avg_lbl.configure(text=best, fg=BLUE)
+        
 
         self._status(f"Done. Estimated complexity: {best}")
 
@@ -355,7 +352,3 @@ class AlgorithmEvaluatorApp(tk.Tk):
 
     def _status(self, msg):
         self.after(0, lambda: self._status_var.set(msg))
-
-
-if __name__ == "__main__":
-    AlgorithmEvaluatorApp().mainloop()

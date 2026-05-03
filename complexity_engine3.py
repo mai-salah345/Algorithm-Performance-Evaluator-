@@ -1,15 +1,6 @@
-"""
-Complexity Engine v3 — Algorithm Performance Evaluator
-Course: Algorithms (CSE 2nd Year) | Dr. Hend Gaballah | Eng. Mahmoud Ibrahim
-Author: Mayar Mohamed Mohamed Basha
-Detects: O(1), O(log n), O(n), O(n log n), O(n²), O(n² log n), O(n³), O(2^n)
-Modes:    analyze_manual() → Mode 1  |  analyze_auto() → Mode 2
-"""
 
 import time, math, random, statistics
 from typing import Callable, List, Tuple, Dict, Optional
-
-# استيراد الأكواد اللي حفظناها عشان نبدل بيها
 from data_provider import AutoModeGenerator, SAMPLE_ALGORITHMS
 from engine import execution_engine
 
@@ -33,7 +24,6 @@ AUTO_SIZES_EXP     = [5, 8, 10, 12, 14, 16, 18, 20, 22]
 
 # ── Timer ─────────────────────────────────────────────────────────────────────
 def _time_function(func_code: str, array: list, r: int = 5) -> float:
-    # التبديل هنا: شلنا الـ copy والـ median اليدوي واستخدمنا الـ execution_engine
     results = []
     for _ in range(r):
         output = execution_engine(func_code, array)
@@ -43,15 +33,12 @@ def _time_function(func_code: str, array: list, r: int = 5) -> float:
 
 # ── Array generators ──────────────────────────────────────────────────────────
 gen = AutoModeGenerator()
-
-# التعديل هنا: ناديت دوال التوليد المباشرة عشان نمنع تكرار توليد الـ 3 حالات
 def _rnd(n):  return gen._generate_random(n)
 def _asc(n):  return gen._generate_sorted(n)
 def _desc(n): return gen._generate_reverse_sorted(n)
 
 # ── O(1) flat-line detector ───────────────────────────────────────────────────
 def _is_flat(times):
-    # حماية: لا يمكن حساب الانحراف المعياري لنقطة واحدة
     if len(times) < 2:
         return False
     m = statistics.mean(times)
@@ -93,7 +80,6 @@ def _fit_ratio(sizes, times):
 
 # ── Decision engine ───────────────────────────────────────────────────────────
 def _decide(sizes, times):
-    # حماية إضافية: لو المصفوفة واحدة بس، رجع نتيجة مبدئية بدون كراش
     if len(sizes) < 2:
         default_rankings = [(lbl, 0.0) for lbl, _ in COMPLEXITY_CLASSES]
         return {
@@ -125,6 +111,8 @@ def analyze_manual(func_code: str, arrays: List[list], repeats: int = 5) -> Dict
     times = [_time_function(func_code, a, repeats) for a in arrays]
     return {"mode": "Manual", "sizes": sizes, "times": times, **_decide(sizes, times)}
 
+import statistics
+
 def analyze_auto(func_code: str, sizes: Optional[List[int]] = None,
                  repeats: int = 5, include_cases: bool = True) -> Dict:
     sizes = sizes or AUTO_SIZES_DEFAULT
@@ -155,8 +143,6 @@ def print_report(r: Dict) -> None:
 # ── Demo ──────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
 
-    # التبديل هنا: سحبنا الأكواد من القاموس اللي استوردناه فوق مباشرة
-    # مفيش داعي نعرف الدوال يدوي تاني هنا
     
     demos = [
         ("O(1)       Constant",      SAMPLE_ALGORITHMS["O(1) – Array Access"],   AUTO_SIZES_DEFAULT),
@@ -164,12 +150,11 @@ if __name__ == "__main__":
         ("O(n log n) Merge Sort",     SAMPLE_ALGORITHMS["O(n log n) – Merge Sort"], AUTO_SIZES_DEFAULT),
         ("O(n^2)     Bubble Sort",    SAMPLE_ALGORITHMS["O(n²) – Bubble Sort"],    [10,50,200,500,800]),
         ("O(n^3)     Triple Loop",    SAMPLE_ALGORITHMS["O(n³) – Triple Loop"],    AUTO_SIZES_CUBIC),
-        ("O(2^n)     Fibonacci Rec", SAMPLE_ALGORITHMS["O(2ⁿ) – Recursive Fib"], AUTO_SIZES_EXP),
+        ("O(2^n)     Fibonacci Rec", SAMPLE_ALGORITHMS["O(2ⁿ) – Fibonacci Recursive"], AUTO_SIZES_EXP),
     ]
 
     print("\n" + "═"*62 + "\n  RUNNING OPTIMIZED COMPLEXITY DEMOS\n" + "═"*62)
     for title, code_str, szs in demos:
         print(f"\n{'─'*62}\n  Testing: {title}")
-        # بنبعت code_str للـ analyze_auto اللي بتبعتها للـ engine
         print_report(analyze_auto(code_str, sizes=szs, repeats=3, include_cases=False))
         input("\n press enter to continue")
