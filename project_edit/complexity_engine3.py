@@ -2,32 +2,7 @@
 Complexity Engine v3 — Algorithm Performance Evaluator
 Course: Algorithms (CSE 2nd Year) | Dr. Hend Gaballah | Eng. Mahmoud Ibrahim
 Author: Mayar Mohamed Mohamed Basha
-
-BUGS FIXED IN THIS VERSION
-────────────────────────────
-BUG 1 — exec() called r times per measurement (300-500 µs overhead each)
-  Old: execution_engine(user_code, array) called r times → exec() paid every rep.
-  O(1) actual work ≈ 193 ns but exec overhead ≈ 400 µs → 1500× noise → wrong result.
-  Fix: _compile_once() runs exec() ONCE and caches the function object.
-       _time_function() then calls fn(array) directly — zero exec overhead per rep.
-
-BUG 2 — O(1) flat-line threshold too small (1e-7 s = 100 ns)
-  With compile-once timing, O(1) functions take ~200-400 ns > 100 ns threshold.
-  Fix: raise absolute threshold to 1e-6 s (1 µs). Anything under 1 µs is O(1).
-
-BUG 3 — deepcopy() in timer inflates timings for large arrays
-  copy.deepcopy(array) at n=50 000 takes ~5 ms, masking the actual algorithm time.
-  Fix: use list(array) — sufficient for all integer/float arrays, ~100× faster.
-
-BUG 4 — _decide() biased: always picked O(n log n) over O(n) when R² gap ≤ 0.03
-  This caused true O(n) algorithms to be reported as O(n log n).
-  Fix: use the dual-scorer rule — let the ratio-growth test break ties neutrally.
-
-BUG 5 — _detect_sizes_and_reps wrongly classified recursive O(n log n) as O(2^n)
-  The recursion regex matched any self-calling function (including merge sort).
-  Fix: only flag O(2^n) on explicit markers: 'fib(', '2**n', or fib return pattern.
 """
-
 import time, math, random, statistics, threading, copy, re
 from typing import List, Dict, Optional
 
