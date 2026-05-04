@@ -4,19 +4,19 @@ class AutoModeGenerator:
     def __init__(self):
         self.all_test_cases = {}
 
-    # 1. الدالة المختصرة للأرقام العشوائية (اللي المحرك بيدور عليها)
+
     def _generate_random(self, n):
         return random.sample(range(n * 10), n)
 
-    # 2. الدالة المختصرة للمصفوفة المترتبة
+
     def _generate_sorted(self, n):
         return list(range(n))
 
-    # 3. الدالة المختصرة للمصفوفة المعكوسة
+
     def _generate_reverse_sorted(self, n):
         return list(range(n, 0, -1))
 
-    # دالتك الأصلية معدلة عشان تستخدم الدوال اللي فوق (عشان الكود يبقى أنظف)
+
     def generate_all_cases(self, n_min=10, n_max=1000, step=100):
         self.all_test_cases = {} 
         for n in range(n_min, n_max + 1, step):
